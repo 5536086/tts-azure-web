@@ -1,22 +1,44 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Selection } from '@nextui-org/react'
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Selection,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+} from '@heroui/react'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCode } from '@fortawesome/free-solid-svg-icons'
+
+import { Locale } from '@/app/lib/i18n/i18n-config'
+import { Tran } from '@/app/lib/types'
+import { useTTSStore } from '@/app/lib/stores'
+
 import Github from '../../icons/github.svg'
 import Language from '../../icons/language.svg'
 import Logo from '../../icons/logo.png'
 import { GITHUB_URL, LANGS } from '../../lib/constants'
+
 import IconButton from './components/icon-button'
 import { ThemeToggle } from './components/theme-toggle'
-import { Locale } from '@/app/lib/i18n/i18n-config'
-import { Tran } from '@/app/lib/types'
 
 export default function Nav({ t }: { t: Tran }) {
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set(['cn']))
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const router = useRouter()
   const pathname = usePathname()
+
+  // Zustand store
+  const { isSSMLMode, toggleSSMLMode } = useTTSStore()
 
   useEffect(() => {
     const locale = pathname.split('/')[1]
@@ -43,6 +65,15 @@ export default function Nav({ t }: { t: Tran }) {
 
   const handleClickTitle = () => {
     router.refresh()
+  }
+
+  const handleSSMLModeToggle = () => {
+    setIsModalOpen(true)
+  }
+
+  const confirmModeSwitch = () => {
+    toggleSSMLMode()
+    setIsModalOpen(false)
   }
 
   return (
@@ -85,8 +116,42 @@ export default function Nav({ t }: { t: Tran }) {
           </DropdownMenu>
         </Dropdown>
 
+        <IconButton
+          icon={<FontAwesomeIcon icon={faCode} className={`${isSSMLMode ? 'text-blue-500' : ''}`} />}
+          title={t['ssml-mode']}
+          className={`hover:text-[#0ea5e9] transition-colors duration-300`}
+          onClick={handleSSMLModeToggle}
+        />
+
         <ThemeToggle t={t} />
       </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        classNames={{ wrapper: 'z-[999]', backdrop: 'z-[999]' }}
+      >
+        <ModalContent>
+          {onClose => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                {isSSMLMode ? t['normal-mode-confirm-title'] : t['ssml-mode-confirm-title']}
+              </ModalHeader>
+              <ModalBody>
+                <p>{isSSMLMode ? t['normal-mode-confirm-message'] : t['ssml-mode-confirm-message']}</p>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="default" variant="light" onPress={onClose}>
+                  {t['cancel']}
+                </Button>
+                <Button color="primary" onPress={confirmModeSwitch}>
+                  {t['confirm']}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { Key } from 'react'
+
 import { getLocale } from '@/app/lib/i18n/get-locale'
 
 export interface ListItem {
@@ -40,9 +41,29 @@ interface KeyValue {
   value: string
 }
 
-export interface GenderItem extends KeyValue {}
+export interface GenderItem extends KeyValue {
+  label: string
+  value: string
+}
 
-export interface LangsItem extends KeyValue {}
+export interface LangsItem extends KeyValue {
+  label: string
+  value: string
+}
+
+export interface VoiceName {
+  label: string
+  value: string
+  hasStyle: boolean
+  hasRole: boolean
+}
+
+export interface ProcessedVoiceData {
+  languages: LangsItem[]
+  gendersByLang: Record<string, GenderItem[]>
+  voicesByLangGender: Record<string, Record<string, VoiceName[]>>
+  stylesAndRoles: Record<string, { styles: string[]; roles: string[] }>
+}
 
 export type Tran = Awaited<ReturnType<typeof getLocale>>
 
